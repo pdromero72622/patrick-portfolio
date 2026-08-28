@@ -168,12 +168,21 @@ export default function WorkflowDashboard() {
             </p>
           </div>
 
-            <Link
-                href="/workflow/new"
-                className="rounded-xl bg-[#171717] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-black/80"
-            >
-                + New Request
-            </Link>
+            <div className="flex flex-wrap gap-3">
+                <Link
+                    href="/workflow/reports"
+                    className="rounded-xl border border-black/10 bg-white px-5 py-3 text-center text-sm font-medium text-black/65 transition hover:bg-black/[0.03]"
+                >
+                    View Reports
+                </Link>
+
+                <Link
+                    href="/workflow/new"
+                    className="rounded-xl bg-[#171717] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-black/80"
+                >
+                    + New Request
+                </Link>
+            </div>
         </div>
 
         <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
