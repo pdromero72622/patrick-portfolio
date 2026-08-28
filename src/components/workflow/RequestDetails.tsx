@@ -1,18 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
-  addStoredActivity,
-  getWorkflowActivityServerSnapshot,
-  getWorkflowActivitySnapshot,
-  getWorkflowServerSnapshot,
-  getWorkflowStorageSnapshot,
-  subscribeToWorkflowActivity,
-  subscribeToWorkflowStorage,
-  updateStoredRequest,
-} from "@/lib/workflowStorage";
+  createWorkflowActivity,
+  getWorkflowActivities,
+  getWorkflowRequestByNumber,
+  updateWorkflowRequestStatus,
+} from "@/lib/workflowService";
 
 import type {
   RequestActivity,
@@ -22,104 +21,75 @@ import type {
 
 type RequestDetailsProps = {
   requestNumber: string;
-  sampleRequests: WorkflowRequest[];
 };
 
 export default function RequestDetails({
   requestNumber,
-  sampleRequests,
 }: RequestDetailsProps) {
-  const storedRequestsJson = useSyncExternalStore(
-    subscribeToWorkflowStorage,
-    getWorkflowStorageSnapshot,
-    getWorkflowServerSnapshot
-  );
+  const [request, setRequest] =
+    useState<WorkflowRequest | null>(null);
 
-  const storedActivitiesJson = useSyncExternalStore(
-    subscribeToWorkflowActivity,
-    getWorkflowActivitySnapshot,
-    getWorkflowActivityServerSnapshot
-  );
+  const [activities, setActivities] =
+    useState<RequestActivity[]>([]);
 
-  const storedRequests = useMemo(() => {
-    try {
-      return JSON.parse(
-        storedRequestsJson
-      ) as WorkflowRequest[];
-    } catch {
-      return [];
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [isUpdating, setIsUpdating] =
+    useState(false);
+
+  const [loadError, setLoadError] =
+    useState("");
+
+  const [actionError, setActionError] =
+    useState("");
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadRequestDetails() {
+      try {
+        setLoadError("");
+
+        const [
+          requestData,
+          activityData,
+        ] = await Promise.all([
+          getWorkflowRequestByNumber(
+            requestNumber
+          ),
+          getWorkflowActivities(
+            requestNumber
+          ),
+        ]);
+
+        if (isActive) {
+          setRequest(requestData);
+          setActivities(activityData);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (isActive) {
+          setLoadError(
+            "The request could not be loaded."
+          );
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
     }
-  }, [storedRequestsJson]);
 
-  const activities = useMemo(() => {
-    try {
-      return JSON.parse(
-        storedActivitiesJson
-      ) as RequestActivity[];
-    } catch {
-      return [];
-    }
-  }, [storedActivitiesJson]);
+    loadRequestDetails();
 
-  const allRequests = useMemo(
-    () => [
-      ...storedRequests,
-      ...sampleRequests,
-    ],
-    [storedRequests, sampleRequests]
-  );
+    return () => {
+      isActive = false;
+    };
+  }, [requestNumber]);
 
-  const request = allRequests.find(
-    (item) =>
-      item.requestNumber === requestNumber
-  );
-
-  const requestActivities = activities
-    .filter(
-      (activity) =>
-        activity.requestNumber === requestNumber
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
-    );
-
-    const nextActivityId =
-    requestActivities.length === 0
-        ? 1
-        : Math.max(
-            ...requestActivities.map(
-            (activity) => activity.id
-            )
-        ) + 1;
-
-  if (!request) {
-    return (
-      <div className="min-h-screen bg-[#f5f6f8]">
-        <div className="mx-auto max-w-4xl px-6 py-12">
-          <Link
-            href="/workflow"
-            className="text-sm text-black/45 hover:text-black"
-          >
-            ← Back to Workflow
-          </Link>
-
-          <div className="mt-10 rounded-2xl border border-black/5 bg-white p-8">
-            <h1 className="text-2xl font-semibold">
-              Request not found
-            </h1>
-
-            <p className="mt-3 text-black/50">
-              The request could not be located.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function changeStatus(
+  async function changeStatus(
     newStatus: RequestStatus,
     activityType:
       | "Submitted"
@@ -131,39 +101,43 @@ export default function RequestDetails({
       return;
     }
 
-    const now = new Date();
+    setIsUpdating(true);
+    setActionError("");
 
-    const updatedRequest: WorkflowRequest = {
-      ...request,
-      status: newStatus,
-      updatedAt: now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-    };
+    try {
+      const updatedRequest =
+        await updateWorkflowRequestStatus(
+          request.requestNumber,
+          newStatus
+        );
 
-    const isStoredRequest = storedRequests.some(
-      (item) =>
-        item.requestNumber === request.requestNumber
-    );
+      const newActivity =
+        await createWorkflowActivity(
+          request.requestNumber,
+          activityType,
+          description
+        );
 
-    if (!isStoredRequest) {
-      return;
+      setRequest(updatedRequest);
+
+      setActivities((current) => [
+        newActivity,
+        ...current,
+      ]);
+    } catch (error) {
+      console.error(error);
+
+      setActionError(
+        "Unable to update the request. Please try again."
+      );
+    } finally {
+      setIsUpdating(false);
     }
-
-    updateStoredRequest(updatedRequest);
-
-    addStoredActivity({
-        id: nextActivityId,
-        requestNumber: request.requestNumber,
-        type: activityType,
-        description,
-        createdAt: now.toISOString(),
-    });
   }
 
-  function getStatusStyle(status: RequestStatus) {
+  function getStatusStyle(
+    status: RequestStatus
+  ) {
     switch (status) {
       case "Approved":
         return "bg-emerald-50 text-emerald-700";
@@ -179,10 +153,43 @@ export default function RequestDetails({
     }
   }
 
-  const isStoredRequest = storedRequests.some(
-    (item) =>
-      item.requestNumber === request.requestNumber
-  );
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f5f6f8]">
+        <div className="mx-auto max-w-4xl px-6 py-12">
+          <p className="text-sm text-black/45">
+            Loading request...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !request) {
+    return (
+      <div className="min-h-screen bg-[#f5f6f8]">
+        <div className="mx-auto max-w-4xl px-6 py-12">
+          <Link
+            href="/workflow"
+            className="text-sm text-black/45 transition hover:text-black"
+          >
+            ← Back to Workflow
+          </Link>
+
+          <div className="mt-10 rounded-2xl border border-black/5 bg-white p-8">
+            <h1 className="text-2xl font-semibold">
+              Request not found
+            </h1>
+
+            <p className="mt-3 text-black/50">
+              {loadError ||
+                "The request could not be located."}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f6f8]">
@@ -254,58 +261,73 @@ export default function RequestDetails({
             </p>
           </div>
 
-          {isStoredRequest && (
-            <div className="flex flex-wrap gap-3 border-t border-black/5 p-7">
-              {request.status === "Draft" && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    changeStatus(
-                      "Pending Approval",
-                      "Submitted",
-                      "Request submitted for approval."
-                    )
-                  }
-                  className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80"
-                >
-                  Submit for Approval
-                </button>
-              )}
-
-              {request.status ===
-                "Pending Approval" && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeStatus(
-                        "Approved",
-                        "Approved",
-                        "Request approved."
-                      )
-                    }
-                    className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-700"
-                  >
-                    Approve
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeStatus(
-                        "Rejected",
-                        "Rejected",
-                        "Request rejected."
-                      )
-                    }
-                    className="rounded-xl bg-red-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
-                </>
-              )}
+          {actionError && (
+            <div className="border-t border-black/5 px-7 py-5">
+              <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {actionError}
+              </div>
             </div>
           )}
+
+          <div className="flex flex-wrap gap-3 border-t border-black/5 p-7">
+            {request.status === "Draft" && (
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={() =>
+                  changeStatus(
+                    "Pending Approval",
+                    "Submitted",
+                    "Request submitted for approval."
+                  )
+                }
+                className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isUpdating
+                  ? "Submitting..."
+                  : "Submit for Approval"}
+              </button>
+            )}
+
+            {request.status ===
+              "Pending Approval" && (
+              <>
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  onClick={() =>
+                    changeStatus(
+                      "Approved",
+                      "Approved",
+                      "Request approved."
+                    )
+                  }
+                  className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUpdating
+                    ? "Updating..."
+                    : "Approve"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  onClick={() =>
+                    changeStatus(
+                      "Rejected",
+                      "Rejected",
+                      "Request rejected."
+                    )
+                  }
+                  className="rounded-xl bg-red-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUpdating
+                    ? "Updating..."
+                    : "Reject"}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="mt-8 rounded-2xl border border-black/5 bg-white p-7 shadow-sm">
@@ -313,13 +335,13 @@ export default function RequestDetails({
             Activity Timeline
           </h2>
 
-          {requestActivities.length === 0 ? (
+          {activities.length === 0 ? (
             <p className="mt-5 text-sm text-black/40">
               No activity has been recorded for this request yet.
             </p>
           ) : (
             <div className="mt-6 space-y-6">
-              {requestActivities.map((activity) => (
+              {activities.map((activity) => (
                 <div
                   key={activity.id}
                   className="flex gap-4"

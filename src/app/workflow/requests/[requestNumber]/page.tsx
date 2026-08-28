@@ -1,5 +1,4 @@
 import RequestDetails from "@/components/workflow/RequestDetails";
-import { workflowRequests } from "@/data/workflowRequests";
 
 type RequestDetailsPageProps = {
   params: Promise<{
@@ -13,9 +12,8 @@ export default async function RequestDetailsPage({
   const { requestNumber } = await params;
 
   return (
-    <RequestDetails
-      requestNumber={requestNumber}
-      sampleRequests={workflowRequests}
-    />
-  );
+        <RequestDetails
+            requestNumber={requestNumber}
+        />
+    );
 }

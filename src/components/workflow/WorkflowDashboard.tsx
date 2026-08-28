@@ -1,51 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useSyncExternalStore, } from "react";
 import {
-  getWorkflowServerSnapshot,
-  getWorkflowStorageSnapshot,
-  subscribeToWorkflowStorage,
-} from "@/lib/workflowStorage";
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { getWorkflowRequests } from "@/lib/workflowService";
 import type {
   RequestPriority,
   RequestStatus,
   WorkflowRequest,
 } from "@/types/workflow";
 
-type WorkflowDashboardProps = {
-  requests: WorkflowRequest[];
-};
-
 type StatusFilter = "All" | RequestStatus;
 type PriorityFilter = "All" | RequestPriority;
 
-export default function WorkflowDashboard({
-  requests,
-}: WorkflowDashboardProps) {
-    const storedRequestsJson = useSyncExternalStore(
-        subscribeToWorkflowStorage,
-        getWorkflowStorageSnapshot,
-        getWorkflowServerSnapshot
-    );
+export default function WorkflowDashboard() {
+    const [allRequests, setAllRequests] =
+        useState<WorkflowRequest[]>([]);
 
-    const storedRequests = useMemo(() => {
-        try {
-            return JSON.parse(
-            storedRequestsJson
-            ) as WorkflowRequest[];
-        } catch {
-            return [];
+    const [isLoading, setIsLoading] = useState(true);
+
+    const [loadError, setLoadError] = useState("");
+
+    useEffect(() => {
+        let isActive = true;
+
+        async function loadRequests() {
+            try {
+                setLoadError("");
+
+                const data = await getWorkflowRequests();
+
+                if (isActive) {
+                    setAllRequests(data);
+                }
+            } catch (error) {
+                console.error(error);
+
+                if (isActive) {
+                    setLoadError(
+                        "Unable to load workflow requests."
+                    );
+                }
+            } finally {
+                if (isActive) {
+                    setIsLoading(false);
+                }
+            }
         }
-    }, [storedRequestsJson]);
 
-    const allRequests = useMemo(
-        () => [
-            ...storedRequests,
-            ...requests,
-        ],
-        [storedRequests, requests]
-    );
+        loadRequests();
+
+        return () => {
+            isActive = false;
+        };
+    }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -260,6 +271,27 @@ export default function WorkflowDashboard({
           </div>
 
           <div className="overflow-x-auto">
+            {isLoading && (
+                <div className="px-6 py-12 text-center">
+                    <p className="text-sm text-black/45">
+                        Loading requests...
+                    </p>
+                </div>
+            )}
+
+            {loadError && (
+                <div className="px-6 py-12 text-center">
+                    <p className="font-medium text-red-600">
+                        {loadError}
+                    </p>
+
+                    <p className="mt-2 text-sm text-black/40">
+                        Check your database connection and try again.
+                    </p>
+                </div>
+            )}
+            
+            {!isLoading && !loadError && (
             <table className="w-full min-w-[950px] text-left">
               <thead className="bg-[#fafafa] text-xs uppercase tracking-wider text-black/40">
                 <tr>
@@ -328,8 +360,11 @@ export default function WorkflowDashboard({
                 ))}
               </tbody>
             </table>
+            )}
 
-            {filteredRequests.length === 0 && (
+            {!isLoading &&
+                !loadError &&
+                filteredRequests.length === 0 && (
               <div className="px-6 py-16 text-center">
                 <p className="font-medium text-black/65">
                   No requests found

@@ -35,6 +35,24 @@ export async function getWorkflowRequests() {
   );
 }
 
+export async function getWorkflowRequestByNumber(
+  requestNumber: string
+) {
+  const { data, error } = await supabase
+    .from("workflow_requests")
+    .select("*")
+    .eq("request_number", requestNumber)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapRequestRow(
+    data as WorkflowRequestRow
+  );
+}
+
 export async function createWorkflowRequest(
   request: Omit<WorkflowRequest, "id">
 ) {

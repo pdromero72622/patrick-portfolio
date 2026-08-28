@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
-  addStoredActivity,
-  addStoredRequest,
-} from "@/lib/workflowStorage";
+  createWorkflowActivity,
+  createWorkflowRequest,
+} from "@/lib/workflowService";
 
 import type {
-  RequestActivity,
   RequestPriority,
   RequestStatus,
   WorkflowRequest,
@@ -50,6 +49,10 @@ export default function NewRequestForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [message, setMessage] = useState("");
 
+    const [submitError, setSubmitError] = useState("");
+    const [isSubmitting, setIsSubmitting] =
+        useState(false);
+
   function validateForm() {
     const newErrors: FormErrors = {};
 
@@ -80,63 +83,90 @@ export default function NewRequestForm() {
     return `REQ-${timestamp}`;
   }
 
-  function createRequest(status: RequestStatus) {
-    if (!validateForm()) {
-      setMessage("");
-      return;
+  async function createRequest(
+    status: RequestStatus
+    ) {
+        if (!validateForm()) {
+            setMessage("");
+            setSubmitError("");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setMessage("");
+        setSubmitError("");
+
+        try {
+            const now = new Date();
+
+            const requestNumber =
+                generateRequestNumber();
+
+            const newRequest: Omit<
+                WorkflowRequest,
+                "id"
+            > = {
+                    requestNumber,
+                    title: title.trim(),
+                    description: description.trim(),
+                    category,
+                    requester: requester.trim(),
+                    priority,
+                    status,
+                    createdAt: now.toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        }
+                    ),
+                    updatedAt: now.toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        }
+                    ),
+                };
+
+                const createdRequest =
+                    await createWorkflowRequest(newRequest);
+
+                await createWorkflowActivity(
+                    createdRequest.requestNumber,
+                    status === "Draft"
+                        ? "Saved Draft"
+                        : "Submitted",
+                    status === "Draft"
+                        ? "Request saved as draft."
+                        : "Request submitted for approval."
+                );
+
+                if (status === "Draft") {
+                    setMessage(
+                        "Request saved as draft."
+                    );
+                } else {
+                    setMessage(
+                        "Request submitted for approval."
+                    );
+                }
+
+                setTimeout(() => {
+                    router.push("/workflow");
+                }, 700);
+            } catch (error) {
+                console.error(error);
+
+                setSubmitError(
+                    "Unable to save the request. Please try again."
+                );
+            } finally {
+                setIsSubmitting(false);
+            }
     }
-
-    const now = new Date();
-
-    const newRequest: WorkflowRequest = {
-      id: Date.now(),
-      requestNumber: generateRequestNumber(),
-      title: title.trim(),
-      description: description.trim(),
-      category,
-      requester: requester.trim(),
-      priority,
-      status,
-      createdAt: now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      updatedAt: now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-    };
-
-    addStoredRequest(newRequest);
-
-    const activity: RequestActivity = {
-        id: Date.now() + 1,
-        requestNumber: newRequest.requestNumber,
-        type:
-            status === "Draft"
-            ? "Saved Draft"
-            : "Submitted",
-        description:
-            status === "Draft"
-            ? "Request saved as draft."
-            : "Request submitted for approval.",
-        createdAt: now.toISOString(),
-    };
-
-    addStoredActivity(activity);
-
-    if (status === "Draft") {
-      setMessage("Request saved as draft.");
-    } else {
-      setMessage("Request submitted for approval.");
-    }
-
-    setTimeout(() => {
-      router.push("/workflow");
-    }, 700);
-  }
 
   return (
     <div className="min-h-screen bg-[#f5f6f8]">
@@ -259,6 +289,12 @@ export default function NewRequestForm() {
               </div>
             )}
 
+            {submitError && (
+                <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    {submitError}
+                </div>
+            )}
+
             <div className="flex flex-col-reverse gap-3 border-t border-black/5 pt-6 sm:flex-row sm:justify-end">
               <Link
                 href="/workflow"
@@ -269,20 +305,26 @@ export default function NewRequestForm() {
 
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={() => createRequest("Draft")}
-                className="rounded-xl border border-black/10 px-5 py-3 text-sm font-medium transition hover:bg-black/[0.03]"
+                className="rounded-xl border border-black/10 px-5 py-3 text-sm font-medium transition hover:bg-black/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Save Draft
+                {isSubmitting
+                    ? "Saving..."
+                    : "Save Draft"}
               </button>
 
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={() =>
                   createRequest("Pending Approval")
                 }
-                className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80"
+                className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Submit for Approval
+                {isSubmitting
+                    ? "Submitting..."
+                    : "Submit for Approval"}
               </button>
             </div>
           </div>
