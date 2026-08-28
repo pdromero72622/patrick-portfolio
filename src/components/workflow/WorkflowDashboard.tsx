@@ -279,15 +279,18 @@ export default function WorkflowDashboard({
                     className="cursor-pointer transition hover:bg-black/[0.015]"
                   >
                     <td className="px-6 py-5">
-                      <div>
-                        <p className="text-xs font-medium text-black/35">
-                          {request.requestNumber}
-                        </p>
+                        <div>
+                            <p className="text-xs font-medium text-black/35">
+                                {request.requestNumber}
+                            </p>
 
-                        <p className="mt-1 font-medium text-[#171717]">
-                          {request.title}
-                        </p>
-                      </div>
+                            <Link
+                                href={`/workflow/requests/${request.requestNumber}`}
+                                className="mt-1 inline-block font-medium text-[#171717] transition hover:underline"
+                            >
+                                {request.title}
+                            </Link>
+                        </div>
                     </td>
 
                     <td className="px-6 py-5 text-sm text-black/55">

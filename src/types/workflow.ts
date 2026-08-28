@@ -18,3 +18,18 @@ export type WorkflowRequest = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type RequestActivityType =
+  | "Created"
+  | "Saved Draft"
+  | "Submitted"
+  | "Approved"
+  | "Rejected";
+
+export type RequestActivity = {
+  id: number;
+  requestNumber: string;
+  type: RequestActivityType;
+  description: string;
+  createdAt: string;
+};

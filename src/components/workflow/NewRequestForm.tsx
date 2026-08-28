@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { addStoredRequest } from "@/lib/workflowStorage";
+import {
+  addStoredActivity,
+  addStoredRequest,
+} from "@/lib/workflowStorage";
+
 import type {
+  RequestActivity,
   RequestPriority,
   RequestStatus,
   WorkflowRequest,
@@ -105,6 +110,22 @@ export default function NewRequestForm() {
     };
 
     addStoredRequest(newRequest);
+
+    const activity: RequestActivity = {
+        id: Date.now() + 1,
+        requestNumber: newRequest.requestNumber,
+        type:
+            status === "Draft"
+            ? "Saved Draft"
+            : "Submitted",
+        description:
+            status === "Draft"
+            ? "Request saved as draft."
+            : "Request submitted for approval.",
+        createdAt: now.toISOString(),
+    };
+
+    addStoredActivity(activity);
 
     if (status === "Draft") {
       setMessage("Request saved as draft.");
