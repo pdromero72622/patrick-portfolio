@@ -1,0 +1,95 @@
+import type { WorkflowRequest } from "@/types/workflow";
+
+export const workflowRequests: WorkflowRequest[] = [
+  {
+    id: 1,
+    requestNumber: "REQ-0012",
+    title: "Supplier Delivery Schedule Adjustment",
+    description:
+      "Adjust the delivery schedule for an upcoming supplier shipment due to a revised production requirement.",
+    category: "Operations",
+    requester: "Demo User",
+    priority: "High",
+    status: "Pending Approval",
+    createdAt: "Aug 28, 2026",
+    updatedAt: "Aug 28, 2026",
+  },
+  {
+    id: 2,
+    requestNumber: "REQ-0011",
+    title: "Monthly Production Report Update",
+    description:
+      "Update the reporting configuration to include the latest production planning metrics.",
+    category: "Reporting",
+    requester: "Operations Team",
+    priority: "Medium",
+    status: "Approved",
+    createdAt: "Aug 27, 2026",
+    updatedAt: "Aug 28, 2026",
+  },
+  {
+    id: 3,
+    requestNumber: "REQ-0010",
+    title: "New Supplier Mapping",
+    description:
+      "Add a new supplier mapping to the internal delivery scheduling workflow.",
+    category: "Master Data",
+    requester: "Procurement Team",
+    priority: "Medium",
+    status: "Draft",
+    createdAt: "Aug 26, 2026",
+    updatedAt: "Aug 26, 2026",
+  },
+  {
+    id: 4,
+    requestNumber: "REQ-0009",
+    title: "Production Sequence Revision",
+    description:
+      "Revise the planned sequence after updated production constraints were received.",
+    category: "Planning",
+    requester: "Production Team",
+    priority: "High",
+    status: "Rejected",
+    createdAt: "Aug 25, 2026",
+    updatedAt: "Aug 26, 2026",
+  },
+  {
+    id: 5,
+    requestNumber: "REQ-0008",
+    title: "Dashboard Access Request",
+    description:
+      "Provide dashboard access to a newly assigned member of the operations team.",
+    category: "Access",
+    requester: "Team Lead",
+    priority: "Low",
+    status: "Approved",
+    createdAt: "Aug 24, 2026",
+    updatedAt: "Aug 24, 2026",
+  },
+  {
+    id: 6,
+    requestNumber: "REQ-0007",
+    title: "Delivery Window Exception",
+    description:
+      "Request approval for a delivery outside the standard receiving window.",
+    category: "Operations",
+    requester: "Logistics Team",
+    priority: "High",
+    status: "Pending Approval",
+    createdAt: "Aug 23, 2026",
+    updatedAt: "Aug 24, 2026",
+  },
+  {
+    id: 7,
+    requestNumber: "REQ-0006",
+    title: "Report Export Enhancement",
+    description:
+      "Add additional operational fields to an existing downloadable report.",
+    category: "Reporting",
+    requester: "Business User",
+    priority: "Medium",
+    status: "Draft",
+    createdAt: "Aug 22, 2026",
+    updatedAt: "Aug 23, 2026",
+  },
+];

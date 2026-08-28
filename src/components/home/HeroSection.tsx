@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { skills } from "@/data/skills";
 
 export default function HeroSection() {
@@ -19,19 +20,19 @@ export default function HeroSection() {
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4">
-          <a
+          <Link
             href="#projects"
             className="rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-black/80"
           >
             View Projects
-          </a>
+          </Link>
 
-          <a
-            href="#workflow-demo"
+          <Link
+            href="/workflow"
             className="rounded-full border border-black/15 px-6 py-3 text-sm font-medium transition hover:bg-black/5"
           >
             Explore Workflow Demo
-          </a>
+          </Link>
         </div>
 
         <div className="mt-12 flex flex-wrap gap-2">
