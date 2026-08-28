@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore, } from "react";
+import {
+  getWorkflowServerSnapshot,
+  getWorkflowStorageSnapshot,
+  subscribeToWorkflowStorage,
+} from "@/lib/workflowStorage";
 import type {
   RequestPriority,
   RequestStatus,
@@ -18,6 +23,30 @@ type PriorityFilter = "All" | RequestPriority;
 export default function WorkflowDashboard({
   requests,
 }: WorkflowDashboardProps) {
+    const storedRequestsJson = useSyncExternalStore(
+        subscribeToWorkflowStorage,
+        getWorkflowStorageSnapshot,
+        getWorkflowServerSnapshot
+    );
+
+    const storedRequests = useMemo(() => {
+        try {
+            return JSON.parse(
+            storedRequestsJson
+            ) as WorkflowRequest[];
+        } catch {
+            return [];
+        }
+    }, [storedRequestsJson]);
+
+    const allRequests = useMemo(
+        () => [
+            ...storedRequests,
+            ...requests,
+        ],
+        [storedRequests, requests]
+    );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("All");
@@ -25,7 +54,7 @@ export default function WorkflowDashboard({
     useState<PriorityFilter>("All");
 
   const filteredRequests = useMemo(() => {
-    return requests.filter((request) => {
+    return allRequests.filter((request) => {
       const searchableText = [
         request.requestNumber,
         request.title,
@@ -48,19 +77,24 @@ export default function WorkflowDashboard({
 
       return matchesSearch && matchesStatus && matchesPriority;
     });
-  }, [requests, searchTerm, statusFilter, priorityFilter]);
+  },[
+        allRequests,
+        searchTerm,
+        statusFilter,
+        priorityFilter,
+    ]);
 
-  const totalRequests = requests.length;
+  const totalRequests = allRequests.length;
 
-  const pendingRequests = requests.filter(
+  const pendingRequests = allRequests.filter(
     (request) => request.status === "Pending Approval"
   ).length;
 
-  const approvedRequests = requests.filter(
+  const approvedRequests = allRequests.filter(
     (request) => request.status === "Approved"
   ).length;
 
-  const draftRequests = requests.filter(
+  const draftRequests = allRequests.filter(
     (request) => request.status === "Draft"
   ).length;
 
@@ -123,12 +157,12 @@ export default function WorkflowDashboard({
             </p>
           </div>
 
-          <button
-            type="button"
-            className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80"
-          >
-            + New Request
-          </button>
+            <Link
+                href="/workflow/new"
+                className="rounded-xl bg-[#171717] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-black/80"
+            >
+                + New Request
+            </Link>
         </div>
 
         <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -307,7 +341,7 @@ export default function WorkflowDashboard({
 
           <div className="flex items-center justify-between border-t border-black/5 px-6 py-4 text-sm text-black/40">
             <span>
-              Showing {filteredRequests.length} of {requests.length} requests
+              Showing {filteredRequests.length} of {allRequests.length} requests
             </span>
 
             <span>Demo workspace</span>
