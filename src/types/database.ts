@@ -11,6 +11,7 @@ export type WorkflowRequestRow = {
     | "Pending Approval"
     | "Approved"
     | "Rejected";
+  owner_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -25,5 +26,6 @@ export type WorkflowActivityRow = {
     | "Approved"
     | "Rejected";
   description: string;
+  owner_id: string | null;
   created_at: string;
 };

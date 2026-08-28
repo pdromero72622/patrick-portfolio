@@ -15,6 +15,7 @@ export type WorkflowRequest = {
   requester: string;
   priority: RequestPriority;
   status: RequestStatus;
+  ownerId?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -31,5 +32,6 @@ export type RequestActivity = {
   requestNumber: string;
   type: RequestActivityType;
   description: string;
+  ownerId?: string | null;
   createdAt: string;
 };

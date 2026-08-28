@@ -20,6 +20,7 @@ export function mapRequestRow(
     requester: row.requester,
     priority: row.priority,
     status: row.status,
+    ownerId: row.owner_id,
     createdAt: new Date(
       row.created_at
     ).toLocaleDateString("en-US", {
@@ -45,6 +46,7 @@ export function mapActivityRow(
     requestNumber: row.request_number,
     type: row.activity_type,
     description: row.description,
+    ownerId: row.owner_id,
     createdAt: row.created_at,
   };
 }

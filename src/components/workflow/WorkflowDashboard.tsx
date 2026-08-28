@@ -164,7 +164,7 @@ export default function WorkflowDashboard() {
             </h1>
 
             <p className="mt-3 max-w-2xl text-black/55">
-              Manage internal requests from draft through review and approval.
+              Explore a working request and approval workflow. Showcase records are read-only; create your own request to test the full flow.
             </p>
           </div>
 

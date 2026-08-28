@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import {
   useEffect,
   useState,
@@ -44,6 +45,9 @@ export default function RequestDetails({
   const [actionError, setActionError] =
     useState("");
 
+    const [currentUserId, setCurrentUserId] =
+    useState<string | null>(null);
+
   useEffect(() => {
     let isActive = true;
 
@@ -63,9 +67,17 @@ export default function RequestDetails({
           ),
         ]);
 
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
         if (isActive) {
           setRequest(requestData);
           setActivities(activityData);
+
+            setCurrentUserId(
+                session?.user?.id ?? null
+            );
         }
       } catch (error) {
         console.error(error);
@@ -191,6 +203,10 @@ export default function RequestDetails({
     );
   }
 
+  const canModify =
+  currentUserId !== null &&
+  request.ownerId === currentUserId;
+
   return (
     <div className="min-h-screen bg-[#f5f6f8]">
       <div className="mx-auto max-w-4xl px-6 py-10">
@@ -261,6 +277,16 @@ export default function RequestDetails({
             </p>
           </div>
 
+          {!canModify && (
+                <div className="border-t border-black/5 px-7 py-5">
+                    <p className="text-sm text-black/45">
+                        This is a read-only showcase request. Create your own
+                        request from the workflow dashboard to test the approval
+                        flow.
+                    </p>
+                </div>
+            )}
+
           {actionError && (
             <div className="border-t border-black/5 px-7 py-5">
               <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -269,7 +295,8 @@ export default function RequestDetails({
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3 border-t border-black/5 p-7">
+          {canModify && (
+            <div className="flex flex-wrap gap-3 border-t border-black/5 p-7">
             {request.status === "Draft" && (
               <button
                 type="button"
@@ -327,8 +354,9 @@ export default function RequestDetails({
                 </button>
               </>
             )}
-          </div>
+          </div>)}
         </div>
+        
 
         <div className="mt-8 rounded-2xl border border-black/5 bg-white p-7 shadow-sm">
           <h2 className="text-xl font-semibold">

@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
+import { ensureDemoSession } from "@/lib/demoAuth";
+
 import {
   mapActivityRow,
   mapRequestRow,
@@ -56,6 +58,8 @@ export async function getWorkflowRequestByNumber(
 export async function createWorkflowRequest(
   request: Omit<WorkflowRequest, "id">
 ) {
+    const user = await ensureDemoSession();
+
   const { data, error } = await supabase
     .from("workflow_requests")
     .insert({
@@ -66,6 +70,7 @@ export async function createWorkflowRequest(
       requester: request.requester,
       priority: request.priority,
       status: request.status,
+      owner_id: user.id,
     })
     .select()
     .single();
@@ -129,12 +134,15 @@ export async function createWorkflowActivity(
   type: RequestActivityType,
   description: string
 ) {
+    const user = await ensureDemoSession();
+
   const { data, error } = await supabase
     .from("workflow_activity")
     .insert({
       request_number: requestNumber,
       activity_type: type,
       description,
+      owner_id: user.id,
     })
     .select()
     .single();
