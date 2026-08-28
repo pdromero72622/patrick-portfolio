@@ -1,4 +1,5 @@
 import SectionLabel from "@/components/ui/SectionLabel";
+import Link from "next/link";
 
 export default function BeyondBuildSection() {
   return (
@@ -15,6 +16,12 @@ export default function BeyondBuildSection() {
             A future collection of photographs, places, moments, and details
             I&apos;ve captured outside of development work.
           </p>
+          <Link
+            href="/beyond-the-build"
+            className="mt-7 inline-flex text-sm font-medium transition hover:underline"
+          >
+            Explore the gallery →
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
