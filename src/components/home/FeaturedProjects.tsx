@@ -1,5 +1,6 @@
 import SectionLabel from "@/components/ui/SectionLabel";
 import { projects } from "@/data/projects";
+import Link from "next/link";
 
 export default function FeaturedProjects() {
   return (
@@ -25,8 +26,15 @@ export default function FeaturedProjects() {
             </h3>
 
             <p className="mt-4 leading-7 text-black/55">
-              {project.description}
+                {project.summary}
             </p>
+
+            <Link
+                href={`/projects/${project.slug}`}
+                className="mt-6 inline-flex text-sm font-medium text-black transition hover:underline"
+            >
+                View case study →
+            </Link>
 
             <div className="mt-auto flex flex-wrap gap-2 pt-8">
               {project.tags.map((tag) => (
