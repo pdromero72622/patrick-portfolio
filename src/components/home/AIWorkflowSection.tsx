@@ -1,4 +1,5 @@
 import SectionLabel from "@/components/ui/SectionLabel";
+import Link from "next/link";
 
 export default function AIWorkflowSection() {
   return (
@@ -12,6 +13,13 @@ export default function AIWorkflowSection() {
               AI is part of the workflow, not a substitute for understanding
               the problem.
             </h2>
+
+            <Link
+              href="/ai-development"
+              className="mt-7 inline-flex text-sm font-medium transition hover:underline"
+            >
+              View the AI development log →
+            </Link>
           </div>
 
           <div className="space-y-6">
