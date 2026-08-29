@@ -3,6 +3,14 @@ import Link from "next/link";
 import PhotographyGallery from "@/components/gallery/PhotographyGallery";
 import { galleryItems } from "@/data/gallery";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Beyond the Build",
+  description:
+    "A curated photography collection featuring places, street scenes, details, and moments captured away from the keyboard.",
+};
+
 export default function BeyondTheBuildPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f5] text-[#171717]">

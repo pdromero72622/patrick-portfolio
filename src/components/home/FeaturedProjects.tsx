@@ -1,8 +1,18 @@
 import SectionLabel from "@/components/ui/SectionLabel";
 import { projects } from "@/data/projects";
 import Link from "next/link";
+import {
+  Factory,
+  Truck,
+  Workflow,
+} from "lucide-react";
 
 export default function FeaturedProjects() {
+  const projectIcons = {
+    "production-planning": Factory,
+    "delivery-scheduling": Truck,
+    "workflow-operations": Workflow,
+  };
   return (
     <section id="projects" className="mx-auto max-w-6xl px-6 py-24">
       <div className="mb-12">
@@ -19,7 +29,18 @@ export default function FeaturedProjects() {
             key={project.title}
             className="flex min-h-[340px] flex-col rounded-3xl border border-black/8 bg-white p-7"
           >
-            <div className="mb-12 h-12 w-12 rounded-2xl bg-black" />
+            {(() => {
+              const Icon =
+                projectIcons[
+                  project.slug as keyof typeof projectIcons
+                ];
+
+              return (
+                <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white">
+                  <Icon size={22} strokeWidth={1.8} />
+                </div>
+              );
+            })()}
 
             <h3 className="text-xl font-semibold tracking-tight">
               {project.title}

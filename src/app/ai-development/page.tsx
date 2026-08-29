@@ -2,6 +2,14 @@ import Link from "next/link";
 
 import { aiDevelopmentEntries } from "@/data/aiDevelopment";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI Development Log",
+  description:
+    "A practical look at how AI was used as a development partner throughout the build of this portfolio application.",
+};
+
 export default function AIDevelopmentPage() {
   return (
     <main className="min-h-screen bg-[#f7f7f5] text-[#171717]">

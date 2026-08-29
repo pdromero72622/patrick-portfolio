@@ -1,11 +1,23 @@
+import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
 
 export default function AboutSection() {
   return (
     <section id="about" className="border-t border-black/5 bg-white">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-[0.8fr_1.2fr]">
+      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
           <SectionLabel>About</SectionLabel>
+
+          <div className="relative mt-8 aspect-[4/5] max-w-md overflow-hidden rounded-3xl bg-black/[0.04]">
+            <Image
+              src="/profile/about-profile.png"
+              alt="Patrick Romero outdoors"
+              fill
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-cover"
+              priority={false}
+            />
+          </div>
         </div>
 
         <div>
