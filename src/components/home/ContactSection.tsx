@@ -25,7 +25,7 @@ export default function ContactSection() {
           </a>
 
           <a
-            href="GITHUB_URL_HERE"
+            href="https://github.com/pdromero72622/patrick-portfolio"
             target="_blank"
             rel="noreferrer"
             className="rounded-xl border border-white/15 px-5 py-3 text-sm font-medium text-white/80"
