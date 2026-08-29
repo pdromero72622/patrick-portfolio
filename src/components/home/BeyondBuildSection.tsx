@@ -1,3 +1,4 @@
+import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
 import Link from "next/link";
 
@@ -25,8 +26,25 @@ export default function BeyondBuildSection() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="aspect-[4/5] rounded-3xl bg-black/10" />
-          <div className="mt-10 aspect-[4/5] rounded-3xl bg-black/5" />
+          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
+            <Image
+              src="/gallery/quiet-streets-1.jpg"
+              alt="A quiet road at sunset with mountains in the distance"
+              fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
+              className="object-cover"
+            />
+          </div>
+
+          <div className="relative mt-10 aspect-[4/5] overflow-hidden rounded-3xl">
+            <Image
+              src="/gallery/a-different-view-1.jpg"
+              alt="A calm lakeside scene at sunset with a dock and small boats"
+              fill
+              sizes="(max-width: 1024px) 50vw, 25vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
     </section>
