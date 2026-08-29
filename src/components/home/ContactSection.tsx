@@ -25,7 +25,7 @@ export default function ContactSection() {
           </a>
 
           <a
-            href="YOUR_GITHUB_URL_HERE"
+            href="GITHUB_URL_HERE"
             target="_blank"
             rel="noreferrer"
             className="rounded-xl border border-white/15 px-5 py-3 text-sm font-medium text-white/80"
